@@ -356,3 +356,11 @@ body{
     padding:8px 12px;
 
 }
+.navbar .nav-link {
+    transition: all 0.3s ease;
+}
+
+.navbar .nav-link:hover {
+    color: #ffd700 !important;
+    transform: translateY(-2px);
+}

@@ -38,7 +38,16 @@ export const registerDriver = async (req, res) => {
 
         const driverWithCar = await Driver.findOne({ car });
 
-        const hashedPassword = await bcrypt.hash(password, 10);
+if (driverWithCar) {
+
+    return res.status(400).json({
+        success: false,
+        message: "This car is already assigned to another driver."
+    });
+
+}
+
+const hashedPassword = await bcrypt.hash(password, 10);
 
         const newDriver = await Driver.create({
             name,
@@ -75,7 +84,7 @@ export const loginDriver = async (req, res) => {
 
         const { email, password } = req.body;
 
-        const driver = await Driver.findOne({ email });
+        const driver = await Driver.findOne({ email }).populate("car");
 
         if (!driver) {
             return res.status(404).json({
@@ -109,14 +118,16 @@ export const loginDriver = async (req, res) => {
             message: "Login Successful",
             token,
             driver: {
-                id: driver._id,
-                name: driver.name,
-                email: driver.email,
-                phone: driver.phone,
-                licenseNumber: driver.licenseNumber,
-                isAvailable: driver.isAvailable,
-                totalEarnings: driver.totalEarnings
-            }
+    id: driver._id,
+    name: driver.name,
+    email: driver.email,
+    phone: driver.phone,
+    licenseNumber: driver.licenseNumber,
+    isAvailable: driver.isAvailable,
+    totalEarnings: driver.totalEarnings,
+    averageRating: driver.averageRating,
+    car: driver.car
+}
         });
 
     } catch (error) {
@@ -205,7 +216,11 @@ export const acceptRide = async (req, res) => {
 
     try {
 
-        const booking = await Booking.findById(req.params.id);
+        const updatedBooking = await Booking.findById(booking._id)
+.populate("user","name phone")
+.populate("car")
+.populate("driver","name");
+
 
         if (!booking) {
             return res.status(404).json({
@@ -243,7 +258,7 @@ export const acceptRide = async (req, res) => {
         res.status(200).json({
             success: true,
             message: "Ride Accepted Successfully",
-            booking
+            booking:updatedBooking
         });
 
     } catch (error) {
@@ -398,12 +413,9 @@ export const completeRide = async (req, res) => {
                 message: "Only started rides can be completed."
             });
         }
-
-        booking.status = "Completed";
-        await booking.save();
-
-        booking.paymentStatus = "Paid";
-        await booking.save();
+booking.status = "Completed";
+booking.paymentStatus = "Paid";
+await booking.save();
 
         // Make driver available again
         const driver = await Driver.findById(req.user.id);
@@ -444,12 +456,29 @@ export const getRideHistory = async (req, res) => {
 
     try {
 
+        console.log("============== DRIVER ==============");
+        console.log("Logged Driver:", req.user.id);
+
+        const allBookings = await Booking.find();
+
+        console.log(
+            "All Booking Drivers:",
+            allBookings.map(b => ({
+                booking: b._id,
+                driver: b.driver,
+                status: b.status
+            }))
+        );
+
         const bookings = await Booking.find({
             driver: req.user.id
         })
         .populate("user", "name phone")
         .populate("car", "carName brand")
         .sort({ createdAt: -1 });
+
+        console.log("Bookings Found:", bookings.length);
+        console.log("====================================");
 
         res.status(200).json({
             success: true,
@@ -467,7 +496,6 @@ export const getRideHistory = async (req, res) => {
     }
 
 };
-
 // Driver Earnings
 export const getDriverEarnings = async (req, res) => {
 
@@ -475,6 +503,10 @@ export const getDriverEarnings = async (req, res) => {
 
         const driver = await Driver.findById(req.user.id)
             .select("name totalEarnings");
+            const completedTrips = await Booking.countDocuments({
+    driver: req.user.id,
+    status: "Completed"
+});
 
         if (!driver) {
             return res.status(404).json({
@@ -485,7 +517,12 @@ export const getDriverEarnings = async (req, res) => {
 
         res.status(200).json({
             success: true,
-            driver
+           driver: {
+    name: driver.name,
+    totalEarnings: driver.totalEarnings,
+    completedTrips,
+    averageRating: driver.averageRating
+}
         });
 
     } catch (error) {

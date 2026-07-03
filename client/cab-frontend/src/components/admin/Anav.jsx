@@ -18,7 +18,13 @@ const logout = () => {
 
 
   return (
-    <nav className="navbar navbar-expand-lg navbar-dark bg-dark shadow">
+   <nav
+    className="navbar navbar-expand-lg navbar-dark"
+    style={{
+        background: "linear-gradient(90deg,#004d40,#00695c)"
+    }}
+>
+
       <div className="container">
 
         <Link className="navbar-brand fw-bold" to="/admin/home">
@@ -66,6 +72,14 @@ const logout = () => {
                 <FaClipboardList /> Bookings
               </Link>
             </li>
+            <li className="nav-item">
+    <Link
+        className="nav-link"
+        to="/admin/adddriver"
+    >
+        🚖 Register Driver
+    </Link>
+</li>
 
           </ul>
 

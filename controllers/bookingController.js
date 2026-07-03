@@ -27,6 +27,10 @@ export const bookRide = async (req, res) => {
             car: selectedCar._id,
             isAvailable: true
         });
+        console.log("========== BOOK RIDE ==========");
+console.log("Selected Car:", selectedCar._id.toString());
+console.log("Assigned Driver:", availableDriver?._id.toString());
+console.log("Driver Name:", availableDriver?.name);
 
         if (!availableDriver) {
             return res.status(400).json({
@@ -61,6 +65,12 @@ export const bookRide = async (req, res) => {
             fare
 
         });
+        console.log("========== BOOK RIDE ==========");
+console.log("Selected Car:", selectedCar._id.toString());
+console.log("Assigned Driver:", availableDriver._id.toString());
+console.log("Driver Name:", availableDriver.name);
+console.log("Booking Driver:", booking.driver.toString());
+console.log("===============================");
 
         selectedCar.available = false;
         await selectedCar.save();
@@ -102,7 +112,8 @@ export const getMyBookings = async (req, res) => {
 
             user: req.user.id
 
-        }).populate("car");
+        }).populate("car")
+        .populate("driver", "name phone averageRating");
 
         res.status(200).json({
 
@@ -208,9 +219,9 @@ export const getAllBookings = async (req, res) => {
 
         const bookings = await Booking.find()
 
-            .populate("user")
-
-            .populate("car");
+           .populate("user", "name email phone")
+.populate("car")
+.populate("driver", "name phone");
 
         res.status(200).json({
 
@@ -242,7 +253,8 @@ export const getBookingById = async (req, res) => {
     try {
 
         const booking = await Booking.findById(req.params.id)
-            .populate("car");
+            .populate("car")
+            .populate("driver", "name phone averageRating");
 
         if (!booking) {
             return res.status(404).json({

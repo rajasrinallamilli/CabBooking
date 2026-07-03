@@ -36,11 +36,13 @@ function Home() {
 
                             </p>
 
-                           <Link
-    to="/user/login"
-    className="btn btn-primary btn-lg me-3"
+                  <Link
+to="/user/cabs"
+className="btn btn-primary btn-lg"
 >
-    Book Now
+
+Book Cab
+
 </Link>
 
 <Link
