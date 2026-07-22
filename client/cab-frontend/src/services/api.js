@@ -1,27 +1,17 @@
 import axios from "axios";
 
 const api = axios.create({
-
-    baseURL: "http://localhost:8000/api"
-
+    baseURL: "https://cab-booking-wheat.vercel.app/api"
 });
 
-api.interceptors.request.use(
+api.interceptors.request.use((config) => {
+    const token = localStorage.getItem("token");
 
-(config)=>{
+    if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+    }
 
-const token=localStorage.getItem("token");
-
-if(token){
-
-config.headers.Authorization=`Bearer ${token}`;
-
-}
-
-return config;
-
-}
-
-);
+    return config;
+});
 
 export default api;
