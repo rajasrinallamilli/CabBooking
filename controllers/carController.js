@@ -1,4 +1,4 @@
-import Car from "../models/carSchema.js";
+import Car from "../models/CarSchema.js";
 
 // Add New Car
 export const addCar = async (req, res) => {
